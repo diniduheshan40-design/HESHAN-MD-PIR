@@ -153,13 +153,13 @@ app.get('/', (req, res) => {
     <button id="get-btn" onclick="startPairProcess()">
       <i class="fa-solid fa-key"></i> GET PAIR CODE
     </button>
-    <div id="status-msg">Connecting to WhatsApp... Please wait.</div>
+    <div id="status-msg">Generating code... Please wait.</div>
     <div id="result-box">
       <div class="code-label">Click to Copy Code</div>
       <div id="code" class="code-display" title="Click to copy"></div>
       <div id="copy-msg" class="copy-alert"><i class="fa-solid fa-check"></i> Copied to clipboard!</div>
       <p class="instruction">
-        Open <b>WhatsApp > Linked Devices > Link with phone number</b> and paste the code immediately.
+        Open <b>WhatsApp > Linked Devices > Link with phone number</b> and enter the code.
       </p>
     </div>
   </div>
@@ -187,7 +187,7 @@ app.get('/', (req, res) => {
       box.style.display = 'none';
       copyMsg.style.display = 'none';
       statusMsg.style.display = 'block';
-      statusMsg.innerText = 'Connecting to WhatsApp WebSocket...';
+      statusMsg.innerText = 'Connecting to WhatsApp...';
 
       if (pollInterval) clearInterval(pollInterval);
 
@@ -218,16 +218,16 @@ app.get('/', (req, res) => {
               clearInterval(pollInterval);
               alert(stat.error);
               resetBtn();
-            } else if (retries > 35) {
+            } else if (retries > 25) {
               clearInterval(pollInterval);
-              alert('Timeout! කරුණාකර නැවත උත්සාහ කරන්න.');
+              alert('Timeout! WhatsApp එකෙන් response එකක් ලැබුනේ නෑ. කරුණාකර නැවත උත්සාහ කරන්න.');
               resetBtn();
             }
           } catch(e) {}
         }, 1500);
 
       } catch (e) {
-        alert('Server unreachable. Re-trying...');
+        alert('Server connection error. Try again.');
         resetBtn();
       }
     }
@@ -278,7 +278,6 @@ async function runPairSession(num) {
     if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-    let requested = false;
 
     try {
         const sock = makeWASocket({
@@ -288,7 +287,6 @@ async function runPairSession(num) {
             },
             printQRInTerminal: false,
             logger: pino({ level: 'fatal' }),
-            // Official canonical browser signature (macOS Chrome)
             browser: Browsers.macOS('Chrome'),
             syncFullHistory: false,
             markOnlineOnConnect: false,
@@ -300,22 +298,22 @@ async function runPairSession(num) {
 
         sock.ev.on('creds.update', saveCreds);
 
-        // Official Baileys method: Socket එක QR / Ready stage එකට ආවම පමණක් Pair Code එක ඉල්ලීම
-        sock.ev.on('connection.update', async (update) => {
-            const { connection, qr } = update;
-
-            if (qr && !sock.authState.creds.registered && !requested) {
-                requested = true;
+        // QR event එකට ඉන්නේ නැතුව socket එක හැදිලා 2s වලින් direct code එක ඉල්ලනවා
+        if (!sock.authState.creds.registered) {
+            setTimeout(async () => {
                 try {
-                    await delay(1000);
                     const code = await sock.requestPairingCode(num);
                     const formatted = code?.match(/.{1,4}/g)?.join('-') || code;
                     sessionStore.set(num, { status: 'ready', code: formatted, error: null });
                 } catch (codeErr) {
-                    console.error('Pairing Code Request Error:', codeErr);
-                    sessionStore.set(num, { status: 'error', code: null, error: 'WhatsApp rejected request. කරුණාකර තත්පර 30කින් නැවත උත්සාහ කරන්න.' });
+                    console.error('Pairing Error:', codeErr);
+                    sessionStore.set(num, { status: 'error', code: null, error: 'WhatsApp code request failed. Try again in 30s.' });
                 }
-            }
+            }, 2000);
+        }
+
+        sock.ev.on('connection.update', async (update) => {
+            const { connection } = update;
 
             if (connection === 'open') {
                 console.log(`[+] SUCCESS: Device Linked for ${num}`);
