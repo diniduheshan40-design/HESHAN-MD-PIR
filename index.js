@@ -7,7 +7,6 @@ const {
     useMultiFileAuthState,
     delay,
     makeCacheableSignalKeyStore,
-    Browsers,
     DisconnectReason
 } = require('@whiskeysockets/baileys');
 
@@ -15,37 +14,218 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Server sleep වීම වැළැක්වීමට ping endpoint එකක්
-app.get('/ping', (req, res) => res.send('OK'));
+// Render server sleep වීම වැළැක්වීමට ping route එකක්
+app.get('/ping', (req, res) => res.send('PONG'));
 
+// Cyberpunk Dark UI එක කෙලින්ම Render වෙයි (HTML File errors කිසිවක් නැත)
+app.get('/', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HESHAN-MD | PAIR CODE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ef4444;
+      --primary-glow: rgba(239, 68, 68, 0.4);
+      --accent: #38bdf8;
+      --bg: #07090e;
+      --card: rgba(15, 23, 42, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(239, 68, 68, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.1) 0px, transparent 50%);
+      color: var(--text);
+      padding: 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 999px;
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+    h1 span { color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
+    .desc { font-size: 0.85rem; color: var(--dim); margin-bottom: 24px; }
+    .input-group { text-align: left; margin-bottom: 20px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 8px; }
+    .input-field { position: relative; display: flex; align-items: center; }
+    .input-field i { position: absolute; left: 14px; color: #64748b; font-size: 0.95rem; }
+    input {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 14px 14px 14px 42px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+    button:disabled { background: #334155; cursor: not-allowed; box-shadow: none; }
+    #result-box {
+      display: none;
+      margin-top: 24px;
+      padding: 20px;
+      background: #090d16;
+      border: 1px dashed var(--accent);
+      border-radius: 14px;
+    }
+    .code-label { font-size: 0.75rem; color: var(--dim); margin-bottom: 8px; text-transform: uppercase; }
+    .code-display {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 6px;
+      cursor: pointer;
+      user-select: all;
+      text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+      display: inline-block;
+    }
+    .copy-alert { display: none; font-size: 0.75rem; color: #34d399; font-weight: 600; margin-top: 4px; }
+    .instruction { font-size: 0.75rem; color: #64748b; margin-top: 10px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge"><i class="fa-solid fa-bolt"></i> Official Pairing Tool</div>
+    <h1>HESHAN <span>MD</span></h1>
+    <p class="desc">Enter your WhatsApp number with country code</p>
+    <div class="input-group">
+      <label for="phone">Phone Number (eg: 947xxxxxxxx)</label>
+      <div class="input-field">
+        <i class="fa-solid fa-phone"></i>
+        <input type="text" id="phone" placeholder="94701234567" autocomplete="off" />
+      </div>
+    </div>
+    <button id="get-btn" onclick="fetchPairCode()">
+      <i class="fa-solid fa-key"></i> GET PAIR CODE
+    </button>
+    <div id="result-box">
+      <div class="code-label">Click to Copy Code</div>
+      <div id="code" class="code-display" title="Click to copy"></div>
+      <div id="copy-msg" class="copy-alert"><i class="fa-solid fa-check"></i> Copied to clipboard!</div>
+      <p class="instruction">
+        Open <b>WhatsApp > Linked Devices > Link with phone number</b> and paste the code immediately.
+      </p>
+    </div>
+  </div>
+  <script>
+    setInterval(() => { fetch('/ping').catch(() => {}); }, 25000);
+
+    async function fetchPairCode() {
+      const input = document.getElementById('phone');
+      const btn = document.getElementById('get-btn');
+      const box = document.getElementById('result-box');
+      const codeField = document.getElementById('code');
+      const copyMsg = document.getElementById('copy-msg');
+
+      const rawNum = input.value.replace(/[^0-9]/g, '');
+      if (rawNum.length < 10) {
+        alert('කරුණාකර රටේ කෝඩ් එකත් එක්ක valid number එකක් දෙන්න (eg: 947xxxxxxxx)');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
+      box.style.display = 'none';
+      copyMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/code?number=' + encodeURIComponent(rawNum));
+        const data = await res.json();
+        if (data.code) {
+          codeField.innerText = data.code;
+          box.style.display = 'block';
+        } else {
+          alert(data.error || 'Code generate කිරීමට නොහැකි විය.');
+        }
+      } catch (e) {
+        alert('Connection timeout! කරුණාකර නැවත උත්සාහ කරන්න.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-key"></i> GET PAIR CODE';
+      }
+    }
+
+    document.getElementById('code').addEventListener('click', function() {
+      const pureCode = this.innerText.replace(/-/g, '');
+      navigator.clipboard.writeText(pureCode).then(() => {
+        const msg = document.getElementById('copy-msg');
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 2500);
+      });
+    });
+  </script>
+</body>
+</html>`);
+});
+
+// Pair Code Generation Backend Route
 app.get('/code', async (req, res) => {
     let num = req.query.number;
+    if (!num) return res.status(400).json({ error: 'Phone number is required' });
 
-    if (!num) {
-        return res.status(400).json({ error: 'Phone number is required' });
-    }
-
-    // Number එක clean කරගැනීම (+, spaces අයින් කරලා)
     num = num.replace(/[^0-9]/g, '');
+    if (num.length < 10) return res.status(400).json({ error: 'Invalid phone number format!' });
 
-    if (num.length < 10) {
-        return res.status(400).json({ error: 'Invalid number! Include country code (e.g. 947...)' });
-    }
-
-    // අලුත් unique session path එකක්
     const sessionId = `heshan_${Date.now()}`;
     const sessionDir = path.join(__dirname, 'temp', sessionId);
-    
-    if (!fs.existsSync(sessionDir)) {
-        fs.mkdirSync(sessionDir, { recursive: true });
-    }
+    if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-
     let codeSent = false;
-    let isConnected = false;
+    let isLinked = false;
 
     try {
         const sock = makeWASocket({
@@ -55,19 +235,17 @@ app.get('/code', async (req, res) => {
             },
             printQRInTerminal: false,
             logger: pino({ level: 'fatal' }),
-            // WhatsApp Web standard browser signature එක
-            browser: ['Chrome (Linux)', 'Chrome', '122.0.6261.128'],
+            browser: ['Ubuntu', 'Chrome', '20.0.04'],
             syncFullHistory: false,
             markOnlineOnConnect: false,
-            connectTimeoutMs: 180000,        // Timeout එක විනාඩි 3ක් දක්වා වැඩි කර ඇත
+            connectTimeoutMs: 120000,
             defaultQueryTimeoutMs: 0,
-            keepAliveIntervalMs: 8000,       // Connection drop නොවී තියාගන්න ping interval එක
+            keepAliveIntervalMs: 8000,
             emitOwnEvents: false
         });
 
         sock.ev.on('creds.update', saveCreds);
 
-        // Code එක generate කර frontend එකට යැවීම
         if (!sock.authState.creds.registered) {
             setTimeout(async () => {
                 try {
@@ -81,21 +259,20 @@ app.get('/code', async (req, res) => {
                     console.error('Pairing Code Request Error:', codeErr);
                     if (!codeSent && !res.headersSent) {
                         codeSent = true;
-                        res.status(500).json({ error: 'WhatsApp rejected code request. Please retry.' });
+                        res.status(500).json({ error: 'Code generation failed. Please try again.' });
                     }
                 }
             }, 2500);
         }
 
-        // WhatsApp එකෙන් Code එක link කළ පසු ක්‍රියාත්මක වන කොටස
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
 
             if (connection === 'open') {
-                isConnected = true;
+                isLinked = true;
                 console.log(`[+] SUCCESS! Device Linked for ${num}`);
                 
-                // WhatsApp creds.json එක disk එකට write වෙනකල් තත්පර 5ක් ඉවසීම
+                // WhatsApp creds සම්පූර්ණයෙන්ම save වෙනකල් තත්පර 5ක් ඉවසීම
                 await delay(5000);
 
                 try {
@@ -104,48 +281,36 @@ app.get('/code', async (req, res) => {
                         const credsData = fs.readFileSync(credsPath);
                         const base64Session = Buffer.from(credsData).toString('base64');
                         const finalSession = `HESHAN~${base64Session}`;
-
                         const targetJid = `${num}@s.whatsapp.net`;
 
-                        // User ගේ WhatsApp chat එකට Session ID එක send කිරීම
                         await sock.sendMessage(targetJid, {
                             text: `*╔════════════════════╗*\n*  ⚡ HESHAN-MD CONNECTED ⚡*\n*╚════════════════════╝*\n\n*YOUR SESSION ID:*\n\`\`\`${finalSession}\`\`\`\n\n> ⚠️ *මෙම Session ID එක කාටවත් share කරන්න එපා.*\n\n*Created by Heshan* 🇱🇰`
                         });
 
-                        console.log(`[+] Session ID sent successfully to ${num}`);
+                        console.log(`[+] Session ID sent to WhatsApp (${num})`);
                     }
                 } catch (sendErr) {
                     console.error('Session send error:', sendErr);
                 }
 
-                // Temporary files safetly delete කිරීම
                 await delay(3000);
                 sock.ws?.close();
-                try {
-                    fs.rmSync(sessionDir, { recursive: true, force: true });
-                } catch (e) {}
+                try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (e) {}
 
             } else if (connection === 'close') {
                 const reason = lastDisconnect?.error?.output?.statusCode;
-                console.log(`[-] Connection closed. Code: ${reason}`);
-
-                // Device එක සාර්ථකව link නොවී disconnect වුණොත් folder එක clear කිරීම
-                if (!isConnected) {
-                    try {
-                        fs.rmSync(sessionDir, { recursive: true, force: true });
-                    } catch (e) {}
+                if (!isLinked) {
+                    try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (e) {}
                 }
             }
         });
 
     } catch (err) {
-        console.error('Core Socket Error:', err);
+        console.error('Socket Error:', err);
         if (!codeSent && !res.headersSent) {
-            res.status(500).json({ error: 'Server initialization error. Try again.' });
+            res.status(500).json({ error: 'Server initialization error.' });
         }
-        try {
-            fs.rmSync(sessionDir, { recursive: true, force: true });
-        } catch (e) {}
+        try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (e) {}
     }
 });
 
