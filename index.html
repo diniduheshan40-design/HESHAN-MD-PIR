@@ -3,28 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HESHAN-MD | PAIR CODE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <title>HESHAN-MD | PAIRING</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-red: #ff003c;
-            --dark-red: #8b0000;
-            --bg-black: #060608;
-            --card-bg: rgba(18, 10, 14, 0.75);
-            --border-glow: rgba(255, 0, 60, 0.4);
+            --red: #ff003c;
+            --dark-red: #590015;
+            --bg: #070709;
+            --card: rgba(18, 10, 14, 0.85);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background-color: var(--bg-black);
-            background-image: 
-                radial-gradient(circle at 15% 20%, rgba(255, 0, 60, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 85% 80%, rgba(139, 0, 0, 0.2) 0%, transparent 45%);
+            background: var(--bg);
+            background-image: radial-gradient(circle at center, rgba(255, 0, 60, 0.12) 0%, transparent 70%);
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
             min-height: 100vh;
@@ -32,257 +25,252 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            overflow-x: hidden;
         }
 
-        .panel-container {
+        .box {
             width: 100%;
             max-width: 440px;
-            position: relative;
-        }
-
-        .panel-container::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 22px;
-            background: linear-gradient(135deg, var(--neon-red), transparent 50%, var(--dark-red));
-            z-index: 0;
-            filter: blur(8px);
-            opacity: 0.6;
-        }
-
-        .glass-card {
-            position: relative;
-            z-index: 1;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glow);
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 0, 60, 0.35);
             border-radius: 20px;
-            padding: 40px 30px;
+            padding: 35px 25px;
             text-align: center;
-            box-shadow: 0 0 35px rgba(255, 0, 60, 0.15), inset 0 0 15px rgba(255, 0, 60, 0.05);
+            box-shadow: 0 0 35px rgba(255, 0, 60, 0.2);
         }
 
-        .glitch-title {
+        h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 26px;
-            font-weight: 900;
-            letter-spacing: 2px;
+            font-size: 24px;
             color: #fff;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px var(--neon-red), 0 0 20px rgba(255, 0, 60, 0.5);
-            margin-bottom: 6px;
+            text-shadow: 0 0 10px var(--red);
+            margin-bottom: 5px;
         }
 
-        .badge {
+        .tag {
             display: inline-block;
             font-family: 'Orbitron', sans-serif;
-            font-size: 11px;
-            letter-spacing: 1px;
-            color: var(--neon-red);
+            font-size: 10px;
+            color: var(--red);
             background: rgba(255, 0, 60, 0.1);
             border: 1px solid rgba(255, 0, 60, 0.3);
             padding: 3px 12px;
             border-radius: 50px;
-            margin-bottom: 24px;
-        }
-
-        .desc {
-            color: #a3a3a8;
-            font-size: 15px;
-            font-weight: 500;
-            margin-bottom: 25px;
-            line-height: 1.4;
-        }
-
-        .input-group {
-            position: relative;
             margin-bottom: 20px;
         }
 
+        p { color: #888; font-size: 14px; margin-bottom: 20px; }
+
         input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 0, 60, 0.3);
-            border-radius: 12px;
-            padding: 16px 18px;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 18px;
-            font-weight: 600;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 0, 60, 0.35);
+            border-radius: 10px;
             color: #fff;
-            letter-spacing: 1px;
+            font-size: 17px;
+            font-family: 'Rajdhani', sans-serif;
+            margin-bottom: 15px;
             outline: none;
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
         input:focus {
-            border-color: var(--neon-red);
-            box-shadow: 0 0 15px rgba(255, 0, 60, 0.4);
-            background: rgba(10, 0, 3, 0.8);
+            border-color: var(--red);
+            box-shadow: 0 0 12px rgba(255, 0, 60, 0.5);
         }
 
-        input::placeholder {
-            color: #555;
-            font-weight: 500;
-        }
-
-        .action-btn {
+        button.btn-main {
             width: 100%;
-            background: linear-gradient(90deg, #ff003c 0%, #b3002a 100%);
+            padding: 14px;
+            background: linear-gradient(90deg, #ff003c, #990024);
             border: none;
-            border-radius: 12px;
-            padding: 16px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
+            border-radius: 10px;
             color: #fff;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(255, 0, 60, 0.4);
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(255, 0, 60, 0.7);
-        }
-
-        .action-btn:disabled {
-            background: #2a1117;
-            color: #777;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .code-display-card {
-            display: none;
-            margin-top: 25px;
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px dashed var(--neon-red);
-            border-radius: 14px;
-            padding: 20px;
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        .code-title {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #888;
-            margin-bottom: 8px;
-        }
-
-        .code-box {
             font-family: 'Orbitron', sans-serif;
-            font-size: 28px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 0, 60, 0.4);
+            transition: 0.3s;
+        }
+
+        button.btn-main:hover {
+            box-shadow: 0 0 25px rgba(255, 0, 60, 0.7);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #2a1117;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .result-panel {
+            display: none;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px dashed var(--red);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .pair-code {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 26px;
             font-weight: 900;
-            color: #ff3366;
+            color: #ff2a5f;
             letter-spacing: 5px;
             margin: 10px 0;
-            text-shadow: 0 0 15px rgba(255, 0, 60, 0.6);
-            user-select: all;
+            text-shadow: 0 0 10px rgba(255, 0, 60, 0.6);
         }
 
         .copy-btn {
-            background: rgba(255, 0, 60, 0.15);
-            border: 1px solid rgba(255, 0, 60, 0.4);
-            border-radius: 8px;
+            background: rgba(255, 0, 60, 0.2);
+            border: 1px solid var(--red);
             color: #fff;
-            padding: 8px 18px;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 6px;
             cursor: pointer;
-            margin-top: 6px;
-            transition: 0.2s;
+            font-weight: bold;
+            font-family: 'Rajdhani', sans-serif;
         }
 
-        .copy-btn:hover {
-            background: var(--neon-red);
-            box-shadow: 0 0 10px var(--neon-red);
-        }
+        .copy-btn:hover { background: var(--red); }
 
-        .notice-text {
-            font-size: 12px;
-            color: #666;
+        .loading-text {
+            font-size: 13px;
+            color: #00ffaa;
             margin-top: 10px;
+            animation: pulse 1.2s infinite;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        .session-panel {
+            display: none;
+            margin-top: 20px;
+            background: rgba(0, 255, 170, 0.05);
+            border: 1px solid #00ffaa;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 90px;
+            background: #050b08;
+            border: 1px solid #00ffaa;
+            color: #00ffaa;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 10px 0;
+            resize: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
 
-<div class="panel-container">
-    <div class="glass-card">
-        <h1 class="glitch-title">HESHAN-MD</h1>
-        <span class="badge">V1 PAIRING SERVICE</span>
-        <p class="desc">WhatsApp අංකය රටේ කේතය (Country Code) සමඟ ඇතුළත් කර Pair Code එක ලබාගන්න.</p>
+<div class="box">
+    <h1>HESHAN-MD</h1>
+    <div class="tag">OFFICIAL PAIRING SYSTEM</div>
+    <p>WhatsApp අංකය Country code එක සමඟ ඇතුළත් කරන්න.</p>
 
-        <div class="input-group">
-            <input type="text" id="phoneNum" placeholder="9471xxxxxxx" autocomplete="off">
-        </div>
+    <input type="text" id="phone" placeholder="9471xxxxxxx">
+    <button class="btn-main" id="getBtn" onclick="getCode()">PAIR WITH WHATSAPP</button>
 
-        <button class="action-btn" id="submitBtn" onclick="requestPairCode()">GET CODE</button>
+    <!-- Code Display -->
+    <div class="result-panel" id="codePanel">
+        <div style="font-size: 11px; color: #888;">ENTER THIS IN WHATSAPP:</div>
+        <div class="pair-code" id="codeText">--------</div>
+        <button class="copy-btn" id="copyCodeBtn" onclick="copyCode()">COPY CODE</button>
+        <div class="loading-text" id="loader">⏳ WhatsApp එකෙන් Link වෙනතුරු රැඳී සිටින්න...</div>
+    </div>
 
-        <div class="code-display-card" id="codePanel">
-            <div class="code-title">YOUR PAIRING CODE</div>
-            <div class="code-box" id="pairCode">------</div>
-            <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">COPY CODE</button>
-            <div class="notice-text">WhatsApp &gt; Linked Devices වෙත ගොස් මෙම කේතය ඇතුළත් කරන්න.</div>
-        </div>
+    <!-- Live Session Box -->
+    <div class="session-panel" id="sessionPanel">
+        <div style="color: #00ffaa; font-weight: bold; font-size: 13px;">✅ SUCCESS! SESSION GENERATED</div>
+        <textarea id="sessionVal" readonly></textarea>
+        <button class="btn-main" style="background: #00ffaa; color: #000;" onclick="copySession()">COPY SESSION ID</button>
     </div>
 </div>
 
 <script>
-async function requestPairCode() {
-    const phoneInput = document.getElementById('phoneNum');
-    const submitBtn = document.getElementById('submitBtn');
+let timer = null;
+
+async function getCode() {
+    const input = document.getElementById('phone');
+    const btn = document.getElementById('getBtn');
     const codePanel = document.getElementById('codePanel');
-    const pairCode = document.getElementById('pairCode');
+    const codeText = document.getElementById('codeText');
 
-    let num = phoneInput.value.replace(/[^0-9]/g, '');
-
+    let num = input.value.replace(/[^0-9]/g, '');
     if (!num || num.length < 10) {
-        alert('කරුණාකර නිවැරදි WhatsApp අංකයක් ඇතුළත් කරන්න!');
-        return;
+        return alert('කරුණාකර නිවැරදි WhatsApp අංකයක් ඇතුළත් කරන්න!');
     }
 
-    submitBtn.innerText = 'GENERATING...';
-    submitBtn.disabled = true;
+    btn.innerText = 'CONNECTING...';
+    btn.disabled = true;
 
     try {
         const res = await fetch(`/code?number=${num}`);
         const data = await res.json();
 
         if (data.code) {
-            pairCode.innerText = data.code;
+            codeText.innerText = data.code;
             codePanel.style.display = 'block';
+
+            // WhatsApp එකෙන් link කළ සැනින් Session එක මෙතැනට අදිනවා
+            pollSession(num);
         } else {
-            alert(data.error || 'Pair Code එක ලබාගැනීමට නොහැකි විය.');
+            alert(data.error || 'Pair Code එක ලබාගත නොහැකි විය.');
+            btn.disabled = false;
+            btn.innerText = 'PAIR WITH WHATSAPP';
         }
-    } catch (err) {
-        alert('සර්වර් එක සම්බන්ධ කර ගැනීමට නොහැකි විය.');
-    } finally {
-        submitBtn.innerText = 'GET CODE';
-        submitBtn.disabled = false;
+    } catch (e) {
+        alert('Server Error. කරුණාකර නැවත උත්සාහ කරන්න.');
+        btn.disabled = false;
+        btn.innerText = 'PAIR WITH WHATSAPP';
     }
 }
 
-function copyToClipboard() {
-    const code = document.getElementById('pairCode').innerText;
-    const btn = document.getElementById('copyBtn');
-    
+function pollSession(num) {
+    if (timer) clearInterval(timer);
+    timer = setInterval(async () => {
+        try {
+            const res = await fetch(`/session-status?number=${num}`);
+            const data = await res.json();
+
+            if (data.status === 'success' && data.sessionId) {
+                clearInterval(timer);
+                document.getElementById('codePanel').style.display = 'none';
+                document.getElementById('sessionPanel').style.display = 'block';
+                document.getElementById('sessionVal').value = data.sessionId;
+            }
+        } catch {}
+    }, 2000);
+}
+
+function copyCode() {
+    const code = document.getElementById('codeText').innerText;
     navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copyCodeBtn');
         btn.innerText = 'COPIED!';
-        setTimeout(() => { btn.innerText = 'COPY CODE'; }, 2000);
+        setTimeout(() => btn.innerText = 'COPY CODE', 2000);
+    });
+}
+
+function copySession() {
+    const session = document.getElementById('sessionVal').value;
+    navigator.clipboard.writeText(session).then(() => {
+        alert('Session ID Copied! Paste it to your bot config.cjs');
     });
 }
 </script>
