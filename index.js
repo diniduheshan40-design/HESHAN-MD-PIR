@@ -15,10 +15,12 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Render server sleep වීම වැළැක්වීමට ping route එකක්
+// In-memory status store
+const sessionStore = new Map();
+
 app.get('/ping', (req, res) => res.send('PONG'));
 
-// Cyberpunk Dark UI එක කෙලින්ම Render වෙයි (HTML File errors කිසිවක් නැත)
+// UI එක
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.send(`<!DOCTYPE html>
@@ -134,6 +136,7 @@ app.get('/', (req, res) => {
     }
     .copy-alert { display: none; font-size: 0.75rem; color: #34d399; font-weight: 600; margin-top: 4px; }
     .instruction { font-size: 0.75rem; color: #64748b; margin-top: 10px; line-height: 1.4; }
+    #status-msg { font-size: 0.8rem; color: #38bdf8; margin-top: 12px; display: none; }
   </style>
 </head>
 <body>
@@ -148,9 +151,10 @@ app.get('/', (req, res) => {
         <input type="text" id="phone" placeholder="94701234567" autocomplete="off" />
       </div>
     </div>
-    <button id="get-btn" onclick="fetchPairCode()">
+    <button id="get-btn" onclick="startPairProcess()">
       <i class="fa-solid fa-key"></i> GET PAIR CODE
     </button>
+    <div id="status-msg">Connecting to WhatsApp... Please wait.</div>
     <div id="result-box">
       <div class="code-label">Click to Copy Code</div>
       <div id="code" class="code-display" title="Click to copy"></div>
@@ -163,16 +167,19 @@ app.get('/', (req, res) => {
   <script>
     setInterval(() => { fetch('/ping').catch(() => {}); }, 25000);
 
-    async function fetchPairCode() {
+    let pollInterval = null;
+
+    async function startPairProcess() {
       const input = document.getElementById('phone');
       const btn = document.getElementById('get-btn');
       const box = document.getElementById('result-box');
       const codeField = document.getElementById('code');
       const copyMsg = document.getElementById('copy-msg');
+      const statusMsg = document.getElementById('status-msg');
 
       const rawNum = input.value.replace(/[^0-9]/g, '');
       if (rawNum.length < 10) {
-        alert('කරුණාකර රටේ කෝඩ් එකත් එක්ක valid number එකක් දෙන්න (eg: 947xxxxxxxx)');
+        alert('කරුණාකර රටේ කෝඩ් එකත් එක්ක number එකක් දෙන්න (eg: 947xxxxxxxx)');
         return;
       }
 
@@ -180,22 +187,59 @@ app.get('/', (req, res) => {
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
       box.style.display = 'none';
       copyMsg.style.display = 'none';
+      statusMsg.style.display = 'block';
+      statusMsg.innerText = 'Initializing connection with WhatsApp...';
+
+      if (pollInterval) clearInterval(pollInterval);
 
       try {
-        const res = await fetch('/code?number=' + encodeURIComponent(rawNum));
-        const data = await res.json();
-        if (data.code) {
-          codeField.innerText = data.code;
-          box.style.display = 'block';
-        } else {
-          alert(data.error || 'Code generate කිරීමට නොහැකි විය.');
+        // Step 1: Start background session request
+        const res = await fetch('/start?number=' + encodeURIComponent(rawNum));
+        const initData = await res.json();
+
+        if (initData.error) {
+          alert(initData.error);
+          resetBtn();
+          return;
         }
+
+        // Step 2: Poll every 2 seconds until code arrives
+        let retries = 0;
+        pollInterval = setInterval(async () => {
+          retries++;
+          try {
+            const check = await fetch('/status?number=' + encodeURIComponent(rawNum));
+            const stat = await check.json();
+
+            if (stat.code) {
+              clearInterval(pollInterval);
+              codeField.innerText = stat.code;
+              box.style.display = 'block';
+              statusMsg.style.display = 'none';
+              resetBtn();
+            } else if (stat.error) {
+              clearInterval(pollInterval);
+              alert(stat.error);
+              resetBtn();
+            } else if (retries > 30) {
+              clearInterval(pollInterval);
+              alert('Timeout! WhatsApp එකෙන් response එකක් ලැබුනේ නෑ. කරුණාකර නැවත උත්සාහ කරන්න.');
+              resetBtn();
+            }
+          } catch(e) {}
+        }, 2000);
+
       } catch (e) {
-        alert('Connection timeout! කරුණාකර නැවත උත්සාහ කරන්න.');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-key"></i> GET PAIR CODE';
+        alert('Server unreachable. Re-trying...');
+        resetBtn();
       }
+    }
+
+    function resetBtn() {
+      const btn = document.getElementById('get-btn');
+      const statusMsg = document.getElementById('status-msg');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-key"></i> GET PAIR CODE';
     }
 
     document.getElementById('code').addEventListener('click', function() {
@@ -211,21 +255,37 @@ app.get('/', (req, res) => {
 </html>`);
 });
 
-// Pair Code Generation Backend Route
-app.get('/code', async (req, res) => {
+// Non-blocking Trigger route
+app.get('/start', async (req, res) => {
     let num = req.query.number;
-    if (!num) return res.status(400).json({ error: 'Phone number is required' });
+    if (!num) return res.status(400).json({ error: 'Phone number required' });
 
     num = num.replace(/[^0-9]/g, '');
-    if (num.length < 10) return res.status(400).json({ error: 'Invalid phone number format!' });
+    if (num.length < 10) return res.status(400).json({ error: 'Invalid phone number!' });
 
-    const sessionId = `heshan_${Date.now()}`;
+    // Store state
+    sessionStore.set(num, { status: 'starting', code: null, error: null });
+    res.json({ ok: true, message: 'Processing' });
+
+    // Run socket in background
+    runPairSession(num);
+});
+
+// Fast Status Checker Route
+app.get('/status', (req, res) => {
+    let num = req.query.number?.replace(/[^0-9]/g, '');
+    if (!num || !sessionStore.has(num)) {
+        return res.json({ status: 'none' });
+    }
+    res.json(sessionStore.get(num));
+});
+
+async function runPairSession(num) {
+    const sessionId = `heshan_${num}_${Date.now()}`;
     const sessionDir = path.join(__dirname, 'temp', sessionId);
     if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-    let codeSent = false;
-    let isLinked = false;
 
     try {
         const sock = makeWASocket({
@@ -238,7 +298,7 @@ app.get('/code', async (req, res) => {
             browser: ['Ubuntu', 'Chrome', '20.0.04'],
             syncFullHistory: false,
             markOnlineOnConnect: false,
-            connectTimeoutMs: 120000,
+            connectTimeoutMs: 60000,
             defaultQueryTimeoutMs: 0,
             keepAliveIntervalMs: 8000,
             emitOwnEvents: false
@@ -247,33 +307,23 @@ app.get('/code', async (req, res) => {
         sock.ev.on('creds.update', saveCreds);
 
         if (!sock.authState.creds.registered) {
-            setTimeout(async () => {
-                try {
-                    const code = await sock.requestPairingCode(num);
-                    const formatted = code?.match(/.{1,4}/g)?.join('-') || code;
-                    if (!codeSent && !res.headersSent) {
-                        codeSent = true;
-                        res.json({ code: formatted });
-                    }
-                } catch (codeErr) {
-                    console.error('Pairing Code Request Error:', codeErr);
-                    if (!codeSent && !res.headersSent) {
-                        codeSent = true;
-                        res.status(500).json({ error: 'Code generation failed. Please try again.' });
-                    }
-                }
-            }, 2500);
+            await delay(2500);
+            try {
+                const code = await sock.requestPairingCode(num);
+                const formatted = code?.match(/.{1,4}/g)?.join('-') || code;
+                sessionStore.set(num, { status: 'code_ready', code: formatted, error: null });
+            } catch (err) {
+                console.error('Code Gen Error:', err);
+                sessionStore.set(num, { status: 'error', code: null, error: 'WhatsApp code request rejected' });
+            }
         }
 
         sock.ev.on('connection.update', async (update) => {
-            const { connection, lastDisconnect } = update;
+            const { connection } = update;
 
             if (connection === 'open') {
-                isLinked = true;
-                console.log(`[+] SUCCESS! Device Linked for ${num}`);
-                
-                // WhatsApp creds සම්පූර්ණයෙන්ම save වෙනකල් තත්පර 5ක් ඉවසීම
-                await delay(5000);
+                console.log(`[+] SUCCESS: Device Linked for ${num}`);
+                await delay(4000);
 
                 try {
                     const credsPath = path.join(sessionDir, 'creds.json');
@@ -293,28 +343,21 @@ app.get('/code', async (req, res) => {
                     console.error('Session send error:', sendErr);
                 }
 
-                await delay(3000);
+                await delay(2000);
                 sock.ws?.close();
+                sessionStore.delete(num);
                 try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (e) {}
-
-            } else if (connection === 'close') {
-                const reason = lastDisconnect?.error?.output?.statusCode;
-                if (!isLinked) {
-                    try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (e) {}
-                }
             }
         });
 
-    } catch (err) {
-        console.error('Socket Error:', err);
-        if (!codeSent && !res.headersSent) {
-            res.status(500).json({ error: 'Server initialization error.' });
-        }
-        try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (e) {}
+    } catch (e) {
+        console.error('Socket Boot Error:', e);
+        sessionStore.set(num, { status: 'error', code: null, error: 'Server initialization error' });
+        try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (err) {}
     }
-});
+}
 
 app.listen(PORT, () => {
-    console.log(`[✓] HESHAN-MD Pair Server running on port ${PORT}`);
+    console.log(`[✓] HESHAN-MD Server running on port ${PORT}`);
 });
 
