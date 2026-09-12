@@ -1,16 +1,15 @@
 {
-  "name": "heshan-md-pair",
+  "name": "heshan-pair-site",
   "version": "1.0.0",
-  "description": "Red & Black Cyberpunk Pairing Service for HESHAN-MD",
+  "description": "Pairing Code Generator for HESHAN-MD",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.6.0",
+    "@whiskeysockets/baileys": "^6.7.9",
     "express": "^4.19.2",
     "pino": "^9.0.0"
   }
 }
-
