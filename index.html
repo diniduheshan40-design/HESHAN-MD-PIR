@@ -1,280 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HESHAN-MD | PAIRING</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --red: #ff003c;
-            --dark-red: #590015;
-            --bg: #070709;
-            --card: rgba(18, 10, 14, 0.85);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background: var(--bg);
-            background-image: radial-gradient(circle at center, rgba(255, 0, 60, 0.12) 0%, transparent 70%);
-            color: #fff;
-            font-family: 'Rajdhani', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .box {
-            width: 100%;
-            max-width: 440px;
-            background: var(--card);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 0, 60, 0.35);
-            border-radius: 20px;
-            padding: 35px 25px;
-            text-align: center;
-            box-shadow: 0 0 35px rgba(255, 0, 60, 0.2);
-        }
-
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 24px;
-            color: #fff;
-            text-shadow: 0 0 10px var(--red);
-            margin-bottom: 5px;
-        }
-
-        .tag {
-            display: inline-block;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 10px;
-            color: var(--red);
-            background: rgba(255, 0, 60, 0.1);
-            border: 1px solid rgba(255, 0, 60, 0.3);
-            padding: 3px 12px;
-            border-radius: 50px;
-            margin-bottom: 20px;
-        }
-
-        p { color: #888; font-size: 14px; margin-bottom: 20px; }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 0, 60, 0.35);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 17px;
-            font-family: 'Rajdhani', sans-serif;
-            margin-bottom: 15px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--red);
-            box-shadow: 0 0 12px rgba(255, 0, 60, 0.5);
-        }
-
-        button.btn-main {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(90deg, #ff003c, #990024);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 0, 60, 0.4);
-            transition: 0.3s;
-        }
-
-        button.btn-main:hover {
-            box-shadow: 0 0 25px rgba(255, 0, 60, 0.7);
-            transform: translateY(-2px);
-        }
-
-        button:disabled {
-            background: #2a1117;
-            color: #666;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        .result-panel {
-            display: none;
-            margin-top: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px dashed var(--red);
-            border-radius: 12px;
-            padding: 15px;
-        }
-
-        .pair-code {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 26px;
-            font-weight: 900;
-            color: #ff2a5f;
-            letter-spacing: 5px;
-            margin: 10px 0;
-            text-shadow: 0 0 10px rgba(255, 0, 60, 0.6);
-        }
-
-        .copy-btn {
-            background: rgba(255, 0, 60, 0.2);
-            border: 1px solid var(--red);
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: 'Rajdhani', sans-serif;
-        }
-
-        .copy-btn:hover { background: var(--red); }
-
-        .loading-text {
-            font-size: 13px;
-            color: #00ffaa;
-            margin-top: 10px;
-            animation: pulse 1.2s infinite;
-        }
-
-        .session-panel {
-            display: none;
-            margin-top: 20px;
-            background: rgba(0, 255, 170, 0.05);
-            border: 1px solid #00ffaa;
-            border-radius: 12px;
-            padding: 15px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 90px;
-            background: #050b08;
-            border: 1px solid #00ffaa;
-            color: #00ffaa;
-            font-family: monospace;
-            font-size: 11px;
-            padding: 8px;
-            border-radius: 6px;
-            margin: 10px 0;
-            resize: none;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HESHAN-MD | Pair Code</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #1e1b4b, #030712);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 20px;
+      padding: 35px 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 0 35px rgba(239, 68, 68, 0.2);
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #ef4444;
+      border-radius: 20px;
+      color: #f87171;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    h1 span { color: #ef4444; }
+    p.sub {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 25px;
+    }
+    .input-box {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+    .input-box label {
+      font-size: 0.8rem;
+      color: #d1d5db;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      color: #6b7280;
+    }
+    .input-wrapper input {
+      width: 100%;
+      padding: 13px 14px 13px 42px;
+      background: #0b0f19;
+      border: 1px solid #374151;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: 0.2s border;
+    }
+    .input-wrapper input:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s transform;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+    button:hover {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      transform: translateY(-1px);
+    }
+    button:disabled {
+      background: #4b5563;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    #code-area {
+      display: none;
+      margin-top: 25px;
+      padding: 18px;
+      background: #030712;
+      border: 1px dashed #ef4444;
+      border-radius: 12px;
+    }
+    .code-text {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 5px;
+      color: #38bdf8;
+      cursor: pointer;
+      user-select: all;
+    }
+    .code-note {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+    .copy-status {
+      font-size: 0.75rem;
+      color: #10b981;
+      margin-top: 4px;
+      display: none;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
 
-<div class="box">
-    <h1>HESHAN-MD</h1>
-    <div class="tag">OFFICIAL PAIRING SYSTEM</div>
-    <p>WhatsApp අංකය Country code එක සමඟ ඇතුළත් කරන්න.</p>
+  <div class="container">
+    <div class="badge">OFFICIAL PAIR SITE</div>
+    <h1>HESHAN <span>MD</span></h1>
+    <p class="sub">Enter your phone number with country code</p>
 
-    <input type="text" id="phone" placeholder="9471xxxxxxx">
-    <button class="btn-main" id="getBtn" onclick="getCode()">PAIR WITH WHATSAPP</button>
-
-    <!-- Code Display -->
-    <div class="result-panel" id="codePanel">
-        <div style="font-size: 11px; color: #888;">ENTER THIS IN WHATSAPP:</div>
-        <div class="pair-code" id="codeText">--------</div>
-        <button class="copy-btn" id="copyCodeBtn" onclick="copyCode()">COPY CODE</button>
-        <div class="loading-text" id="loader">⏳ WhatsApp එකෙන් Link වෙනතුරු රැඳී සිටින්න...</div>
+    <div class="input-box">
+      <label for="num">Phone Number (No '+' or spaces)</label>
+      <div class="input-wrapper">
+        <i class="fa-solid fa-phone"></i>
+        <input type="text" id="num" placeholder="94701234567" />
+      </div>
     </div>
 
-    <!-- Live Session Box -->
-    <div class="session-panel" id="sessionPanel">
-        <div style="color: #00ffaa; font-weight: bold; font-size: 13px;">✅ SUCCESS! SESSION GENERATED</div>
-        <textarea id="sessionVal" readonly></textarea>
-        <button class="btn-main" style="background: #00ffaa; color: #000;" onclick="copySession()">COPY SESSION ID</button>
+    <button id="btn" onclick="requestPairCode()">GET PAIRING CODE</button>
+
+    <div id="code-area">
+      <div id="code-val" class="code-text" title="Click to Copy"></div>
+      <div id="copy-msg" class="copy-status"><i class="fa-solid fa-check"></i> Code Copied!</div>
+      <div class="code-note">
+        Click code to copy. Open <b>WhatsApp > Linked Devices > Link with phone number</b> and enter it quickly.
+      </div>
     </div>
-</div>
+  </div>
 
-<script>
-let timer = null;
+  <script>
+    // Server keep-alive ping
+    setInterval(() => {
+      fetch('/ping').catch(() => {});
+    }, 25000);
 
-async function getCode() {
-    const input = document.getElementById('phone');
-    const btn = document.getElementById('getBtn');
-    const codePanel = document.getElementById('codePanel');
-    const codeText = document.getElementById('codeText');
+    async function requestPairCode() {
+      const numInput = document.getElementById('num');
+      const btn = document.getElementById('btn');
+      const codeArea = document.getElementById('code-area');
+      const codeVal = document.getElementById('code-val');
+      const copyMsg = document.getElementById('copy-msg');
 
-    let num = input.value.replace(/[^0-9]/g, '');
-    if (!num || num.length < 10) {
-        return alert('කරුණාකර නිවැරදි WhatsApp අංකයක් ඇතුළත් කරන්න!');
-    }
+      const phone = numInput.value.replace(/[^0-9]/g, '');
+      if (phone.length < 10) {
+        alert('කරුණාකර නිවැරදි Phone Number එකක් දෙන්න (eg: 947xxxxxxxx)');
+        return;
+      }
 
-    btn.innerText = 'CONNECTING...';
-    btn.disabled = true;
+      btn.disabled = true;
+      btn.innerText = 'GENERATING CODE...';
+      codeArea.style.display = 'none';
+      copyMsg.style.display = 'none';
 
-    try {
-        const res = await fetch(`/code?number=${num}`);
-        const data = await res.json();
+      try {
+        const response = await fetch(`/code?number=${encodeURIComponent(phone)}`);
+        const data = await response.json();
 
         if (data.code) {
-            codeText.innerText = data.code;
-            codePanel.style.display = 'block';
-
-            // WhatsApp එකෙන් link කළ සැනින් Session එක මෙතැනට අදිනවා
-            pollSession(num);
+          codeVal.innerText = data.code;
+          codeArea.style.display = 'block';
         } else {
-            alert(data.error || 'Pair Code එක ලබාගත නොහැකි විය.');
-            btn.disabled = false;
-            btn.innerText = 'PAIR WITH WHATSAPP';
+          alert(data.error || 'Code generate කිරීමට නොහැකි විය. නැවත උත්සාහ කරන්න.');
         }
-    } catch (e) {
-        alert('Server Error. කරුණාකර නැවත උත්සාහ කරන්න.');
+      } catch (err) {
+        alert('Server timeout or Network Error. කරුණාකර නැවත උත්සාහ කරන්න.');
+      } finally {
         btn.disabled = false;
-        btn.innerText = 'PAIR WITH WHATSAPP';
+        btn.innerText = 'GET PAIRING CODE';
+      }
     }
-}
 
-function pollSession(num) {
-    if (timer) clearInterval(timer);
-    timer = setInterval(async () => {
-        try {
-            const res = await fetch(`/session-status?number=${num}`);
-            const data = await res.json();
-
-            if (data.status === 'success' && data.sessionId) {
-                clearInterval(timer);
-                document.getElementById('codePanel').style.display = 'none';
-                document.getElementById('sessionPanel').style.display = 'block';
-                document.getElementById('sessionVal').value = data.sessionId;
-            }
-        } catch {}
-    }, 2000);
-}
-
-function copyCode() {
-    const code = document.getElementById('codeText').innerText;
-    navigator.clipboard.writeText(code).then(() => {
-        const btn = document.getElementById('copyCodeBtn');
-        btn.innerText = 'COPIED!';
-        setTimeout(() => btn.innerText = 'COPY CODE', 2000);
+    document.getElementById('code-val').addEventListener('click', function() {
+      const rawCode = this.innerText.replace(/-/g, '');
+      navigator.clipboard.writeText(rawCode).then(() => {
+        const msg = document.getElementById('copy-msg');
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+      });
     });
-}
-
-function copySession() {
-    const session = document.getElementById('sessionVal').value;
-    navigator.clipboard.writeText(session).then(() => {
-        alert('Session ID Copied! Paste it to your bot config.cjs');
-    });
-}
-</script>
-
+  </script>
 </body>
 </html>
 
