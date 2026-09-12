@@ -1,219 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HESHAN-MD | Pair Code</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HESHAN-MD | PAIR CODE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    :root {
+      --primary: #ef4444;
+      --primary-glow: rgba(239, 68, 68, 0.4);
+      --accent: #38bdf8;
+      --bg-dark: #07090e;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
     body {
-      background: radial-gradient(circle at top, #1e1b4b, #030712);
-      color: #f8fafc;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(239, 68, 68, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.1) 0px, transparent 50%);
+      color: var(--text);
       padding: 20px;
     }
-    .container {
-      background: rgba(17, 24, 39, 0.75);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      border-radius: 20px;
-      padding: 35px 28px;
+
+    .card {
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 0 35px rgba(239, 68, 68, 0.2);
-      text-align: center;
-    }
-    .badge {
-      display: inline-block;
-      padding: 4px 14px;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid #ef4444;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
       border-radius: 20px;
-      color: #f87171;
+      padding: 32px 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      position: relative;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 999px;
+      color: var(--primary);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 1px;
-      margin-bottom: 15px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
     }
+
+    .badge i {
+      font-size: 0.7rem;
+    }
+
     h1 {
       font-size: 1.8rem;
       font-weight: 800;
-      color: #fff;
+      letter-spacing: -0.5px;
       margin-bottom: 6px;
     }
-    h1 span { color: #ef4444; }
-    p.sub {
+
+    h1 span {
+      color: var(--primary);
+      text-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .desc {
       font-size: 0.85rem;
-      color: #9ca3af;
-      margin-bottom: 25px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
     }
-    .input-box {
+
+    .input-group {
       text-align: left;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
-    .input-box label {
-      font-size: 0.8rem;
-      color: #d1d5db;
+
+    label {
       display: block;
-      margin-bottom: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 8px;
     }
-    .input-wrapper {
+
+    .input-field {
       position: relative;
       display: flex;
       align-items: center;
     }
-    .input-wrapper i {
+
+    .input-field i {
       position: absolute;
       left: 14px;
-      color: #6b7280;
-    }
-    .input-wrapper input {
-      width: 100%;
-      padding: 13px 14px 13px 42px;
-      background: #0b0f19;
-      border: 1px solid #374151;
-      border-radius: 10px;
-      color: #fff;
+      color: #64748b;
       font-size: 0.95rem;
+    }
+
+    input {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 14px 14px 14px 42px;
+      color: #fff;
+      font-size: 1rem;
       outline: none;
-      transition: 0.2s border;
+      transition: all 0.2s ease;
     }
-    .input-wrapper input:focus {
-      border-color: #ef4444;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
     }
+
     button {
       width: 100%;
       padding: 14px;
       background: linear-gradient(135deg, #ef4444, #b91c1c);
-      color: #fff;
+      color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 0.95rem;
       font-weight: 700;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      transition: 0.2s transform;
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px var(--primary-glow);
+      transition: all 0.2s ease;
     }
+
     button:hover {
       background: linear-gradient(135deg, #dc2626, #991b1b);
       transform: translateY(-1px);
     }
+
     button:disabled {
-      background: #4b5563;
+      background: #334155;
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
     }
-    #code-area {
+
+    #result-box {
       display: none;
-      margin-top: 25px;
-      padding: 18px;
-      background: #030712;
-      border: 1px dashed #ef4444;
-      border-radius: 12px;
+      margin-top: 24px;
+      padding: 20px;
+      background: #090d16;
+      border: 1px dashed var(--accent);
+      border-radius: 14px;
     }
-    .code-text {
-      font-size: 1.8rem;
+
+    .code-label {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .code-display {
+      font-size: 2rem;
       font-weight: 800;
-      letter-spacing: 5px;
-      color: #38bdf8;
+      color: var(--accent);
+      letter-spacing: 6px;
       cursor: pointer;
       user-select: all;
+      text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+      display: inline-block;
+      margin-bottom: 4px;
     }
-    .code-note {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      margin-top: 8px;
-      line-height: 1.4;
-    }
-    .copy-status {
-      font-size: 0.75rem;
-      color: #10b981;
-      margin-top: 4px;
+
+    .copy-alert {
       display: none;
+      font-size: 0.75rem;
+      color: #34d399;
       font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .instruction {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 10px;
+      line-height: 1.4;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="badge">OFFICIAL PAIR SITE</div>
+  <div class="card">
+    <div class="badge">
+      <i class="fa-solid fa-bolt"></i> Official Pairing Tool
+    </div>
     <h1>HESHAN <span>MD</span></h1>
-    <p class="sub">Enter your phone number with country code</p>
+    <p class="desc">Enter your WhatsApp number with country code</p>
 
-    <div class="input-box">
-      <label for="num">Phone Number (No '+' or spaces)</label>
-      <div class="input-wrapper">
+    <div class="input-group">
+      <label for="phone">Phone Number</label>
+      <div class="input-field">
         <i class="fa-solid fa-phone"></i>
-        <input type="text" id="num" placeholder="94701234567" />
+        <input type="text" id="phone" placeholder="94701234567" autocomplete="off" />
       </div>
     </div>
 
-    <button id="btn" onclick="requestPairCode()">GET PAIRING CODE</button>
+    <button id="get-btn" onclick="fetchPairCode()">
+      <i class="fa-solid fa-key"></i> GET PAIR CODE
+    </button>
 
-    <div id="code-area">
-      <div id="code-val" class="code-text" title="Click to Copy"></div>
-      <div id="copy-msg" class="copy-status"><i class="fa-solid fa-check"></i> Code Copied!</div>
-      <div class="code-note">
-        Click code to copy. Open <b>WhatsApp > Linked Devices > Link with phone number</b> and enter it quickly.
-      </div>
+    <div id="result-box">
+      <div class="code-label">Click to Copy Code</div>
+      <div id="code" class="code-display" title="Click to copy"></div>
+      <div id="copy-msg" class="copy-alert"><i class="fa-solid fa-check"></i> Copied to clipboard!</div>
+      <p class="instruction">
+        Open <b>WhatsApp > Linked Devices > Link with phone number</b> and paste the code immediately.
+      </p>
     </div>
   </div>
 
   <script>
-    // Server keep-alive ping
+    // Keep server active
     setInterval(() => {
       fetch('/ping').catch(() => {});
     }, 25000);
 
-    async function requestPairCode() {
-      const numInput = document.getElementById('num');
-      const btn = document.getElementById('btn');
-      const codeArea = document.getElementById('code-area');
-      const codeVal = document.getElementById('code-val');
+    async function fetchPairCode() {
+      const input = document.getElementById('phone');
+      const btn = document.getElementById('get-btn');
+      const box = document.getElementById('result-box');
+      const codeField = document.getElementById('code');
       const copyMsg = document.getElementById('copy-msg');
 
-      const phone = numInput.value.replace(/[^0-9]/g, '');
-      if (phone.length < 10) {
-        alert('කරුණාකර නිවැරදි Phone Number එකක් දෙන්න (eg: 947xxxxxxxx)');
+      const rawNum = input.value.replace(/[^0-9]/g, '');
+
+      if (rawNum.length < 10) {
+        alert('කරුණාකර රටේ කෝඩ් එකත් එක්ක නිවැරදි number එකක් දෙන්න (eg: 947xxxxxxxx)');
         return;
       }
 
       btn.disabled = true;
-      btn.innerText = 'GENERATING CODE...';
-      codeArea.style.display = 'none';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
+      box.style.display = 'none';
       copyMsg.style.display = 'none';
 
       try {
-        const response = await fetch(`/code?number=${encodeURIComponent(phone)}`);
-        const data = await response.json();
+        const res = await fetch(`/code?number=${encodeURIComponent(rawNum)}`);
+        const data = await res.json();
 
         if (data.code) {
-          codeVal.innerText = data.code;
-          codeArea.style.display = 'block';
+          codeField.innerText = data.code;
+          box.style.display = 'block';
         } else {
-          alert(data.error || 'Code generate කිරීමට නොහැකි විය. නැවත උත්සාහ කරන්න.');
+          alert(data.error || 'Code generate කිරීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.');
         }
-      } catch (err) {
-        alert('Server timeout or Network Error. කරුණාකර නැවත උත්සාහ කරන්න.');
+      } catch (e) {
+        alert('Server connection timeout. කරුණාකර තත්පර කිහිපයකින් නැවත උත්සාහ කරන්න.');
       } finally {
         btn.disabled = false;
-        btn.innerText = 'GET PAIRING CODE';
+        btn.innerHTML = '<i class="fa-solid fa-key"></i> GET PAIR CODE';
       }
     }
 
-    document.getElementById('code-val').addEventListener('click', function() {
-      const rawCode = this.innerText.replace(/-/g, '');
-      navigator.clipboard.writeText(rawCode).then(() => {
-        const msg = document.getElementById('copy-msg');
-        msg.style.display = 'block';
-        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    document.getElementById('code').addEventListener('click', function() {
+      const pureCode = this.innerText.replace(/-/g, '');
+      navigator.clipboard.writeText(pureCode).then(() => {
+        const copyMsg = document.getElementById('copy-msg');
+        copyMsg.style.display = 'block';
+        setTimeout(() => { copyMsg.style.display = 'none'; }, 2500);
       });
     });
   </script>
