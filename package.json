@@ -1,15 +1,17 @@
 {
-  "name": "heshan-pair-site",
-  "version": "1.0.0",
-  "description": "Pairing Code Generator for HESHAN-MD",
+  "name": "heshan-md-pair",
+  "version": "2.0.0",
+  "description": "Stable Pairing Service for HESHAN-MD",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.9",
+    "@whiskeysockets/baileys": "^6.7.18",
     "express": "^4.19.2",
-    "pino": "^9.0.0"
+    "pino": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
