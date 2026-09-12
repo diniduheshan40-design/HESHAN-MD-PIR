@@ -1,136 +1,155 @@
-import express from 'express';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import fs from 'fs';
-import pino from 'pino';
-import { 
-    makeWASocket, 
-    useMultiFileAuthState, 
-    delay, 
-    makeCacheableSignalKeyStore, 
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const pino = require('pino');
+const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    delay,
+    makeCacheableSignalKeyStore,
     Browsers,
-    DisconnectReason 
-} from '@whiskeysockets/baileys';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+    DisconnectReason
+} = require('@whiskeysockets/baileys');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(__dirname));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-const sessions = new Map();
-
-// Temp folder clean up on startup
-const tempRoot = path.join(__dirname, 'auth_info_baileys');
-if (!fs.existsSync(tempRoot)) {
-    fs.mkdirSync(tempRoot, { recursive: true });
-}
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+// Server sleep වීම වැළැක්වීමට ping endpoint එකක්
+app.get('/ping', (req, res) => res.send('OK'));
 
 app.get('/code', async (req, res) => {
     let num = req.query.number;
-    if (!num) return res.status(400).json({ error: 'දුරකථන අංකය ඇතුළත් කරන්න.' });
 
-    num = num.replace(/[^0-9]/g, '');
-    const userSessionDir = path.join(tempRoot, `session_${num}`);
-
-    // කලින් තිබූ පරණ session files මකන්න
-    if (fs.existsSync(userSessionDir)) {
-        fs.rmSync(userSessionDir, { recursive: true, force: true });
+    if (!num) {
+        return res.status(400).json({ error: 'Phone number is required' });
     }
-    fs.mkdirSync(userSessionDir, { recursive: true });
+
+    // Number එක clean කරගැනීම (+, spaces අයින් කරලා)
+    num = num.replace(/[^0-9]/g, '');
+
+    if (num.length < 10) {
+        return res.status(400).json({ error: 'Invalid number! Include country code (e.g. 947...)' });
+    }
+
+    // අලුත් unique session path එකක්
+    const sessionId = `heshan_${Date.now()}`;
+    const sessionDir = path.join(__dirname, 'temp', sessionId);
+    
+    if (!fs.existsSync(sessionDir)) {
+        fs.mkdirSync(sessionDir, { recursive: true });
+    }
+
+    const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+
+    let codeSent = false;
+    let isConnected = false;
 
     try {
-        const { state, saveCreds } = await useMultiFileAuthState(userSessionDir);
-        
         const sock = makeWASocket({
             auth: {
                 creds: state.creds,
-                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'fatal' }))
+                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'fatal' })),
             },
             printQRInTerminal: false,
             logger: pino({ level: 'fatal' }),
-            // WhatsApp එක block නොකරන standard Linux / Firefox browser signature
-            browser: Browsers.macOS('Desktop'),
-            markOnlineOnConnect: true,
-            generateHighQualityLinkPreview: false,
-            syncFullHistory: false
+            // WhatsApp Web standard browser signature එක
+            browser: ['Chrome (Linux)', 'Chrome', '122.0.6261.128'],
+            syncFullHistory: false,
+            markOnlineOnConnect: false,
+            connectTimeoutMs: 180000,        // Timeout එක විනාඩි 3ක් දක්වා වැඩි කර ඇත
+            defaultQueryTimeoutMs: 0,
+            keepAliveIntervalMs: 8000,       // Connection drop නොවී තියාගන්න ping interval එක
+            emitOwnEvents: false
         });
-
-        sessions.set(num, { status: 'waiting', sessionId: null, sock });
 
         sock.ev.on('creds.update', saveCreds);
 
+        // Code එක generate කර frontend එකට යැවීම
+        if (!sock.authState.creds.registered) {
+            setTimeout(async () => {
+                try {
+                    const code = await sock.requestPairingCode(num);
+                    const formatted = code?.match(/.{1,4}/g)?.join('-') || code;
+                    if (!codeSent && !res.headersSent) {
+                        codeSent = true;
+                        res.json({ code: formatted });
+                    }
+                } catch (codeErr) {
+                    console.error('Pairing Code Request Error:', codeErr);
+                    if (!codeSent && !res.headersSent) {
+                        codeSent = true;
+                        res.status(500).json({ error: 'WhatsApp rejected code request. Please retry.' });
+                    }
+                }
+            }, 2500);
+        }
+
+        // WhatsApp එකෙන් Code එක link කළ පසු ක්‍රියාත්මක වන කොටස
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
 
             if (connection === 'open') {
-                console.log(`[+] WhatsApp Linked successfully for ${num}`);
-                await delay(3000);
+                isConnected = true;
+                console.log(`[+] SUCCESS! Device Linked for ${num}`);
+                
+                // WhatsApp creds.json එක disk එකට write වෙනකල් තත්පර 5ක් ඉවසීම
+                await delay(5000);
 
-                const credsPath = path.join(userSessionDir, 'creds.json');
-                if (fs.existsSync(credsPath)) {
-                    const credsData = fs.readFileSync(credsPath, 'utf-8');
-                    const base64Session = Buffer.from(credsData).toString('base64');
-                    const fullSessionId = `HESHAN-MD~${base64Session}`;
+                try {
+                    const credsPath = path.join(sessionDir, 'creds.json');
+                    if (fs.existsSync(credsPath)) {
+                        const credsData = fs.readFileSync(credsPath);
+                        const base64Session = Buffer.from(credsData).toString('base64');
+                        const finalSession = `HESHAN~${base64Session}`;
 
-                    sessions.set(num, { status: 'success', sessionId: fullSessionId });
+                        const targetJid = `${num}@s.whatsapp.net`;
 
-                    // WhatsApp එකේ Saved Messages (You) වෙත කෙලින්ම යවයි
-                    try {
-                        await sock.sendMessage(sock.user.id, { 
-                            text: `*╔════════════════════╗*\n       *HESHAN-MD V1*\n*╚════════════════════╝*\n\n*🔑 YOUR SESSION ID:*\n\n\`\`\`${fullSessionId}\`\`\`\n\n_⚠️ මෙම Session ID එක කාටවත් දෙන්න එපා._\n_Copy කර config.cjs එකට හෝ Render Environment එකට දාන්න._` 
+                        // User ගේ WhatsApp chat එකට Session ID එක send කිරීම
+                        await sock.sendMessage(targetJid, {
+                            text: `*╔════════════════════╗*\n*  ⚡ HESHAN-MD CONNECTED ⚡*\n*╚════════════════════╝*\n\n*YOUR SESSION ID:*\n\`\`\`${finalSession}\`\`\`\n\n> ⚠️ *මෙම Session ID එක කාටවත් share කරන්න එපා.*\n\n*Created by Heshan* 🇱🇰`
                         });
-                    } catch (e) {
-                        console.log('Direct message failed, but session is live on UI.');
+
+                        console.log(`[+] Session ID sent successfully to ${num}`);
                     }
-
-                    await delay(2000);
-                    try { sock.end(); } catch {}
-                    fs.rmSync(userSessionDir, { recursive: true, force: true });
+                } catch (sendErr) {
+                    console.error('Session send error:', sendErr);
                 }
-            }
 
-            if (connection === 'close') {
+                // Temporary files safetly delete කිරීම
+                await delay(3000);
+                sock.ws?.close();
+                try {
+                    fs.rmSync(sessionDir, { recursive: true, force: true });
+                } catch (e) {}
+
+            } else if (connection === 'close') {
                 const reason = lastDisconnect?.error?.output?.statusCode;
-                if (reason === DisconnectReason.loggedOut) {
-                    sessions.set(num, { status: 'failed', error: 'Logged out' });
-                    fs.rmSync(userSessionDir, { recursive: true, force: true });
+                console.log(`[-] Connection closed. Code: ${reason}`);
+
+                // Device එක සාර්ථකව link නොවී disconnect වුණොත් folder එක clear කිරීම
+                if (!isConnected) {
+                    try {
+                        fs.rmSync(sessionDir, { recursive: true, force: true });
+                    } catch (e) {}
                 }
             }
         });
 
-        // WhatsApp වෙතින් pairing code එක request කිරීම
-        if (!sock.authState.creds.registered) {
-            await delay(1500);
-            const code = await sock.requestPairingCode(num);
-            return res.json({ code: code, number: num });
-        } else {
-            return res.json({ error: 'අංකය දැනටමත් සම්බන්ධ වී ඇත.' });
-        }
-
     } catch (err) {
-        console.error('Error generating pairing code:', err);
-        if (!res.headersSent) res.status(500).json({ error: 'Pair Code ලබා ගැනීමට නොහැකි විය.' });
-        if (fs.existsSync(userSessionDir)) fs.rmSync(userSessionDir, { recursive: true, force: true });
-    }
-});
-
-// UI එකෙන් Session එක හැදිලද කියලා බලන endpoint එක
-app.get('/session-status', (req, res) => {
-    const num = req.query.number;
-    if (sessions.has(num)) {
-        res.json(sessions.get(num));
-    } else {
-        res.json({ status: 'none' });
+        console.error('Core Socket Error:', err);
+        if (!codeSent && !res.headersSent) {
+            res.status(500).json({ error: 'Server initialization error. Try again.' });
+        }
+        try {
+            fs.rmSync(sessionDir, { recursive: true, force: true });
+        } catch (e) {}
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`[🚀] Pairing Service is active on port ${PORT}`);
+    console.log(`[✓] HESHAN-MD Pair Server running on port ${PORT}`);
 });
+
