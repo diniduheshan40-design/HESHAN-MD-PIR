@@ -7,7 +7,7 @@ const {
     useMultiFileAuthState,
     delay,
     makeCacheableSignalKeyStore,
-    DisconnectReason
+    Browsers
 } = require('@whiskeysockets/baileys');
 
 const app = express();
@@ -15,12 +15,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// In-memory status store
 const sessionStore = new Map();
 
 app.get('/ping', (req, res) => res.send('PONG'));
 
-// UI එක
+// UI
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.send(`<!DOCTYPE html>
@@ -188,12 +187,11 @@ app.get('/', (req, res) => {
       box.style.display = 'none';
       copyMsg.style.display = 'none';
       statusMsg.style.display = 'block';
-      statusMsg.innerText = 'Initializing connection with WhatsApp...';
+      statusMsg.innerText = 'Connecting to WhatsApp WebSocket...';
 
       if (pollInterval) clearInterval(pollInterval);
 
       try {
-        // Step 1: Start background session request
         const res = await fetch('/start?number=' + encodeURIComponent(rawNum));
         const initData = await res.json();
 
@@ -203,7 +201,6 @@ app.get('/', (req, res) => {
           return;
         }
 
-        // Step 2: Poll every 2 seconds until code arrives
         let retries = 0;
         pollInterval = setInterval(async () => {
           retries++;
@@ -221,13 +218,13 @@ app.get('/', (req, res) => {
               clearInterval(pollInterval);
               alert(stat.error);
               resetBtn();
-            } else if (retries > 30) {
+            } else if (retries > 35) {
               clearInterval(pollInterval);
-              alert('Timeout! WhatsApp එකෙන් response එකක් ලැබුනේ නෑ. කරුණාකර නැවත උත්සාහ කරන්න.');
+              alert('Timeout! කරුණාකර නැවත උත්සාහ කරන්න.');
               resetBtn();
             }
           } catch(e) {}
-        }, 2000);
+        }, 1500);
 
       } catch (e) {
         alert('Server unreachable. Re-trying...');
@@ -240,6 +237,7 @@ app.get('/', (req, res) => {
       const statusMsg = document.getElementById('status-msg');
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-key"></i> GET PAIR CODE';
+      statusMsg.style.display = 'none';
     }
 
     document.getElementById('code').addEventListener('click', function() {
@@ -255,7 +253,6 @@ app.get('/', (req, res) => {
 </html>`);
 });
 
-// Non-blocking Trigger route
 app.get('/start', async (req, res) => {
     let num = req.query.number;
     if (!num) return res.status(400).json({ error: 'Phone number required' });
@@ -263,20 +260,15 @@ app.get('/start', async (req, res) => {
     num = num.replace(/[^0-9]/g, '');
     if (num.length < 10) return res.status(400).json({ error: 'Invalid phone number!' });
 
-    // Store state
     sessionStore.set(num, { status: 'starting', code: null, error: null });
-    res.json({ ok: true, message: 'Processing' });
+    res.json({ ok: true });
 
-    // Run socket in background
     runPairSession(num);
 });
 
-// Fast Status Checker Route
 app.get('/status', (req, res) => {
     let num = req.query.number?.replace(/[^0-9]/g, '');
-    if (!num || !sessionStore.has(num)) {
-        return res.json({ status: 'none' });
-    }
+    if (!num || !sessionStore.has(num)) return res.json({ status: 'none' });
     res.json(sessionStore.get(num));
 });
 
@@ -286,6 +278,7 @@ async function runPairSession(num) {
     if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
 
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+    let requested = false;
 
     try {
         const sock = makeWASocket({
@@ -295,31 +288,34 @@ async function runPairSession(num) {
             },
             printQRInTerminal: false,
             logger: pino({ level: 'fatal' }),
-            browser: ['Ubuntu', 'Chrome', '20.0.04'],
+            // Official canonical browser signature (macOS Chrome)
+            browser: Browsers.macOS('Chrome'),
             syncFullHistory: false,
             markOnlineOnConnect: false,
             connectTimeoutMs: 60000,
             defaultQueryTimeoutMs: 0,
-            keepAliveIntervalMs: 8000,
+            keepAliveIntervalMs: 10000,
             emitOwnEvents: false
         });
 
         sock.ev.on('creds.update', saveCreds);
 
-        if (!sock.authState.creds.registered) {
-            await delay(2500);
-            try {
-                const code = await sock.requestPairingCode(num);
-                const formatted = code?.match(/.{1,4}/g)?.join('-') || code;
-                sessionStore.set(num, { status: 'code_ready', code: formatted, error: null });
-            } catch (err) {
-                console.error('Code Gen Error:', err);
-                sessionStore.set(num, { status: 'error', code: null, error: 'WhatsApp code request rejected' });
-            }
-        }
-
+        // Official Baileys method: Socket එක QR / Ready stage එකට ආවම පමණක් Pair Code එක ඉල්ලීම
         sock.ev.on('connection.update', async (update) => {
-            const { connection } = update;
+            const { connection, qr } = update;
+
+            if (qr && !sock.authState.creds.registered && !requested) {
+                requested = true;
+                try {
+                    await delay(1000);
+                    const code = await sock.requestPairingCode(num);
+                    const formatted = code?.match(/.{1,4}/g)?.join('-') || code;
+                    sessionStore.set(num, { status: 'ready', code: formatted, error: null });
+                } catch (codeErr) {
+                    console.error('Pairing Code Request Error:', codeErr);
+                    sessionStore.set(num, { status: 'error', code: null, error: 'WhatsApp rejected request. කරුණාකර තත්පර 30කින් නැවත උත්සාහ කරන්න.' });
+                }
+            }
 
             if (connection === 'open') {
                 console.log(`[+] SUCCESS: Device Linked for ${num}`);
